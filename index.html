@@ -1,96 +1,165 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>글자 연습 활동지 만들기</title>
+<meta charset="UTF-8">
+<title>글자 연습 활동지</title>
 
-  <style>
+<style>
+  body {
+    font-family: Arial;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .controls {
+    width: 800px;
+  }
+
+  input, select, button {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+  }
+
+  .worksheet {
+    width: 210mm;
+    height: 297mm;
+    padding: 15mm;
+    box-sizing: border-box;
+    background: white;
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .title {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .row {
+    display: flex;
+    margin-bottom: 5px;
+  }
+
+  .box {
+    border: 1px solid #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 3px;
+  }
+
+  .trace {
+    color: #bbb;
+  }
+
+  @media print {
+    .controls {
+      display: none;
+    }
     body {
-      font-family: Arial;
-      padding: 20px;
-      max-width: 800px;
-      margin: auto;
+      margin: 0;
     }
-
-    h1 {
-      text-align: center;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 5px 0;
-      width: 100%;
-    }
-
-    .worksheet {
-      margin-top: 30px;
-    }
-
-    .title {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-
-    .trace {
-      color: #bbb;
-      font-size: 24px;
-      margin: 5px 0;
-    }
-
-    .blank {
-      border-bottom: 1px solid black;
-      height: 30px;
-      margin: 10px 0;
-    }
-
-    @media print {
-      button, input {
-        display: none;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 
 <body>
 
-  <h1>✏️ 글자 연습 활동지 만들기</h1>
+<div class="controls">
+  <h2>✏️ 활동지 만들기</h2>
 
-  <label>연습할 문장</label>
   <input id="textInput" placeholder="예: 민준 사랑해">
 
-  <label>반복 횟수</label>
-  <input id="repeatInput" type="number" value="5">
+  <input id="fontSize" type="number" value="20" placeholder="글자 크기">
 
-  <button onclick="generate()">활동지 만들기</button>
-  <button onclick="window.print()">PDF 저장 / 인쇄</button>
+  <select id="fontFamily">
+    <option value="sans-serif">고딕체</option>
+    <option value="serif">명조체</option>
+    <option value="'Nanum Pen Script', cursive">손글씨</option>
+  </select>
 
-  <div class="worksheet" id="worksheet"></div>
+  <input id="traceCount" type="number" value="5" placeholder="따라쓰기 개수">
+  <input id="blankCount" type="number" value="5" placeholder="빈칸 개수">
 
-  <script>
-    function generate() {
-      const text = document.getElementById("textInput").value;
-      const repeat = parseInt(document.getElementById("repeatInput").value);
+  <button onclick="generate()">생성</button>
+  <button onclick="window.print()">PDF 저장</button>
+</div>
 
-      let html = "";
+<div class="worksheet" id="worksheet"></div>
 
-      // 제목
-      html += `<div class="title">${text}</div>`;
+<!-- 손글씨 폰트 -->
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 
-      // 따라쓰기
-      for (let i = 0; i < repeat; i++) {
-        html += `<div class="trace">${text}</div>`;
-      }
+<script>
+function generate() {
+  const text = document.getElementById("textInput").value;
+  const fontSize = parseInt(document.getElementById("fontSize").value);
+  const fontFamily = document.getElementById("fontFamily").value;
+  const traceCount = document.getElementById("traceCount").value;
+  const blankCount = document.getElementById("blankCount").value;
 
-      // 빈칸
-      for (let i = 0; i < repeat; i++) {
-        html += `<div class="blank"></div>`;
-      }
+  const chars = text.split("");
 
-      document.getElementById("worksheet").innerHTML = html;
-    }
-  </script>
+  let html = "";
+
+  // 날짜
+  const today = new Date();
+  const dateStr = today.toLocaleDateString();
+
+  html += `
+    <div class="top">
+      <div>날짜: ${dateStr}</div>
+      <div>확인 □</div>
+    </div>
+  `;
+
+  // 제목
+  html += `<div class="title" style="font-size:${fontSize + 6}px; font-family:${fontFamily}">
+    ${text}
+  </div>`;
+
+  // ⭐ 핵심: 네모칸 자동 크기 계산
+  const maxWidth = 170; // mm 기준 대략 내부 여백 고려
+  const boxSize = Math.min(50, (600 / chars.length)); // 자동 축소
+  const finalFontSize = Math.min(fontSize, boxSize * 0.6);
+
+  // 따라쓰기
+  for (let i = 0; i < traceCount; i++) {
+    html += `<div class="row">`;
+    chars.forEach(c => {
+      html += `<div class="box trace"
+        style="
+          width:${boxSize}px;
+          height:${boxSize}px;
+          font-size:${finalFontSize}px;
+          font-family:${fontFamily};
+        ">${c}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  // 빈칸
+  for (let i = 0; i < blankCount; i++) {
+    html += `<div class="row">`;
+    chars.forEach(() => {
+      html += `<div class="box"
+        style="
+          width:${boxSize}px;
+          height:${boxSize}px;
+        "></div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById("worksheet").innerHTML = html;
+}
+</script>
 
 </body>
 </html>
