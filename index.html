@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>글자 연습 활동지</title>
+<title>글자 따라쓰기 활동지</title>
 
 <style>
   body {
@@ -14,6 +14,12 @@
 
   .controls {
     width: 800px;
+  }
+
+  label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
   }
 
   input, select, button {
@@ -36,21 +42,30 @@
     margin-bottom: 10px;
   }
 
+  .check-box {
+    width: 25px;
+    height: 25px;
+    border: 1px solid black;
+  }
+
   .title {
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-weight: bold;
   }
 
   .row {
     display: flex;
-    margin-bottom: 5px;
+    justify-content: center; /* 🔥 가운데 정렬 */
+    margin-bottom: 6px;
   }
 
   .box {
     border: 1px solid #000;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* 🔥 글자 위쪽 정렬 */
+    padding-top: 3px;
     margin-right: 3px;
   }
 
@@ -72,20 +87,26 @@
 <body>
 
 <div class="controls">
-  <h2>✏️ 활동지 만들기</h2>
+  <h2>✏️ 글자 따라쓰기 활동지</h2>
 
-  <input id="textInput" placeholder="예: 민준 사랑해">
+  <label>연습할 문장</label>
+  <input id="textInput" placeholder="예: 내사랑 박지안">
 
-  <input id="fontSize" type="number" value="20" placeholder="글자 크기">
+  <label>글자 크기</label>
+  <input id="fontSize" type="number" value="20">
 
+  <label>폰트 종류</label>
   <select id="fontFamily">
     <option value="sans-serif">고딕체</option>
     <option value="serif">명조체</option>
     <option value="'Nanum Pen Script', cursive">손글씨</option>
   </select>
 
-  <input id="traceCount" type="number" value="5" placeholder="따라쓰기 개수">
-  <input id="blankCount" type="number" value="5" placeholder="빈칸 개수">
+  <label>따라쓰기 반복 횟수</label>
+  <input id="traceCount" type="number" value="5">
+
+  <label>빈칸 반복 횟수</label>
+  <input id="blankCount" type="number" value="5">
 
   <button onclick="generate()">생성</button>
   <button onclick="window.print()">PDF 저장</button>
@@ -93,7 +114,6 @@
 
 <div class="worksheet" id="worksheet"></div>
 
-<!-- 손글씨 폰트 -->
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 
 <script>
@@ -115,7 +135,10 @@ function generate() {
   html += `
     <div class="top">
       <div>날짜: ${dateStr}</div>
-      <div>확인 □</div>
+      <div style="display:flex; align-items:center; gap:5px;">
+        확인
+        <div class="check-box"></div>
+      </div>
     </div>
   `;
 
@@ -124,9 +147,8 @@ function generate() {
     ${text}
   </div>`;
 
-  // ⭐ 핵심: 네모칸 자동 크기 계산
-  const maxWidth = 170; // mm 기준 대략 내부 여백 고려
-  const boxSize = Math.min(50, (600 / chars.length)); // 자동 축소
+  // 네모칸 크기 자동 계산
+  const boxSize = Math.min(50, 500 / chars.length);
   const finalFontSize = Math.min(fontSize, boxSize * 0.6);
 
   // 따라쓰기
