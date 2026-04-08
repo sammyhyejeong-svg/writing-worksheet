@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <title>글자 따라쓰기 활동지</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+
 <style>
   body {
-    font-family: Arial;
+    font-family: 'Arial';
+    background: #f7f7fb;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -14,35 +17,51 @@
 
   .controls {
     width: 800px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    text-align: center;
   }
 
   label {
     font-weight: bold;
     margin-top: 10px;
+    display: block;
   }
 
   input, select, button {
     width: 100%;
     padding: 10px;
     margin: 5px 0;
-    box-sizing: border-box;
+    border-radius: 8px;
+    border: 1px solid #ccc;
   }
 
-  /* 🔥 페이지 */
+  button {
+    background: #6c8cff;
+    color: white;
+    font-weight: bold;
+    border: none;
+  }
+
   .page {
     width: 210mm;
     height: 297mm;
     padding: 12mm;
-    box-sizing: border-box;
     background: white;
-    margin-bottom: 10px;
+    margin-top: 10px;
+    box-sizing: border-box;
   }
 
   .top {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
     font-size: 14px;
+    margin-bottom: 10px;
   }
 
   .title {
@@ -54,25 +73,31 @@
   .row {
     display: flex;
     justify-content: center;
-    margin-bottom: 6px;
+    flex-wrap: wrap;
   }
 
   .box {
-    border: 1px solid #000;
+    border: 1px solid #999;
+    border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    margin-right: 4px;
     position: relative;
+    margin-right: 4px;
   }
 
   .char {
     position: absolute;
-    top: 3px;
+    top: 4px;
   }
 
   .trace {
     color: #bbb;
+  }
+
+  .dotted {
+    color: transparent;
+    -webkit-text-stroke: 1px #999;
   }
 
   @page {
@@ -84,7 +109,6 @@
     .controls {
       display: none;
     }
-
     .page {
       page-break-after: always;
     }
@@ -98,7 +122,7 @@
   <h2>✏️ 글자 따라쓰기 활동지</h2>
 
   <label>연습할 문장</label>
-  <input id="textInput">
+  <input id="textInput" placeholder="예: 박지안 사랑해">
 
   <label>글자 크기</label>
   <input id="fontSize" type="number" value="30">
@@ -110,11 +134,14 @@
     <option value="'Nanum Pen Script', cursive">손글씨</option>
   </select>
 
-  <label>따라쓰기 반복 횟수</label>
-  <input id="traceCount" type="number" value="10">
+  <label>따라쓰기 횟수</label>
+  <input id="traceCount" type="number" value="3">
 
-  <label>빈칸 반복 횟수</label>
-  <input id="blankCount" type="number" value="10">
+  <label>점선 글씨 횟수</label>
+  <input id="dottedCount" type="number" value="3">
+
+  <label>빈칸 횟수</label>
+  <input id="blankCount" type="number" value="5">
 
   <button onclick="generate()">생성</button>
   <button onclick="window.print()">PDF 저장</button>
@@ -122,47 +149,38 @@
 
 <div id="worksheet"></div>
 
-<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
-
 <script>
 function generate() {
   const text = document.getElementById("textInput").value;
   const fontSize = parseInt(document.getElementById("fontSize").value);
   const fontFamily = document.getElementById("fontFamily").value;
   const traceCount = parseInt(document.getElementById("traceCount").value);
+  const dottedCount = parseInt(document.getElementById("dottedCount").value);
   const blankCount = parseInt(document.getElementById("blankCount").value);
 
   const chars = text.split("");
 
-  // 🔥 정사각형 크기
-  const boxSize = fontSize * 1.8;
+  const boxSize = fontSize * 1.6;
+  const rowGap = fontSize / 3;
 
-  // 🔥 페이지당 최대 줄 수 계산
-  const usableHeight = 900; // px 기준 대략
-  const rowHeight = boxSize + 6;
+  const usableHeight = 900;
+  const rowHeight = boxSize + rowGap;
   const rowsPerPage = Math.floor(usableHeight / rowHeight);
 
-  let allRows = [];
+  let rows = [];
 
-  // 따라쓰기 rows
-  for (let i = 0; i < traceCount; i++) {
-    allRows.push({ type: "trace" });
-  }
-
-  // 빈칸 rows
-  for (let i = 0; i < blankCount; i++) {
-    allRows.push({ type: "blank" });
-  }
+  for (let i = 0; i < traceCount; i++) rows.push("trace");
+  for (let i = 0; i < dottedCount; i++) rows.push("dotted");
+  for (let i = 0; i < blankCount; i++) rows.push("blank");
 
   let html = "";
-  let pageCount = Math.ceil(allRows.length / rowsPerPage);
-
   const today = new Date().toLocaleDateString();
+
+  let pageCount = Math.ceil(rows.length / rowsPerPage);
 
   for (let p = 0; p < pageCount; p++) {
     html += `<div class="page">`;
 
-    // 상단
     html += `
       <div class="top">
         <div>✍️ 글자를 따라쓰며 연습해요</div>
@@ -170,31 +188,31 @@ function generate() {
       </div>
     `;
 
-    // 제목 (첫 페이지만)
     if (p === 0) {
-      html += `<div class="title" style="font-size:${fontSize + 8}px; font-family:${fontFamily}">
+      html += `<div class="title" style="font-size:${fontSize+8}px; font-family:${fontFamily}">
         ${text}
       </div>`;
     }
 
-    // 해당 페이지 rows
-    let start = p * rowsPerPage;
-    let end = start + rowsPerPage;
-    let pageRows = allRows.slice(start, end);
+    let pageRows = rows.slice(p * rowsPerPage, (p+1)*rowsPerPage);
 
-    pageRows.forEach(r => {
-      html += `<div class="row">`;
+    pageRows.forEach(type => {
+      html += `<div class="row" style="margin-bottom:${rowGap}px;">`;
 
       chars.forEach(c => {
-        if (r.type === "trace") {
+        if (c === " ") {
+          html += `<div class="box" style="width:${boxSize}px;height:${boxSize}px;"></div>`;
+        } else {
+          let className = type === "trace" ? "trace" : type === "dotted" ? "dotted" : "";
+
           html += `
             <div class="box" style="width:${boxSize}px;height:${boxSize}px;">
-              <div class="char trace" style="font-size:${fontSize}px; font-family:${fontFamily}">
+              ${type !== "blank" ? `
+              <div class="char ${className}" style="font-size:${fontSize}px; font-family:${fontFamily}">
                 ${c}
-              </div>
-            </div>`;
-        } else {
-          html += `<div class="box" style="width:${boxSize}px;height:${boxSize}px;"></div>`;
+              </div>` : ""}
+            </div>
+          `;
         }
       });
 
