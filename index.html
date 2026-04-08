@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>글자 연습 활동지 만들기</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 0;
+      width: 100%;
+    }
+
+    .worksheet {
+      margin-top: 30px;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .trace {
+      color: #bbb;
+      font-size: 24px;
+      margin: 5px 0;
+    }
+
+    .blank {
+      border-bottom: 1px solid black;
+      height: 30px;
+      margin: 10px 0;
+    }
+
+    @media print {
+      button, input {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>✏️ 글자 연습 활동지 만들기</h1>
+
+  <label>연습할 문장</label>
+  <input id="textInput" placeholder="예: 민준 사랑해">
+
+  <label>반복 횟수</label>
+  <input id="repeatInput" type="number" value="5">
+
+  <button onclick="generate()">활동지 만들기</button>
+  <button onclick="window.print()">PDF 저장 / 인쇄</button>
+
+  <div class="worksheet" id="worksheet"></div>
+
+  <script>
+    function generate() {
+      const text = document.getElementById("textInput").value;
+      const repeat = parseInt(document.getElementById("repeatInput").value);
+
+      let html = "";
+
+      // 제목
+      html += `<div class="title">${text}</div>`;
+
+      // 따라쓰기
+      for (let i = 0; i < repeat; i++) {
+        html += `<div class="trace">${text}</div>`;
+      }
+
+      // 빈칸
+      for (let i = 0; i < repeat; i++) {
+        html += `<div class="blank"></div>`;
+      }
+
+      document.getElementById("worksheet").innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>
