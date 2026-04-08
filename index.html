@@ -155,13 +155,6 @@ function generate() {
 
   const today = new Date().toLocaleDateString();
 
-  // 🌸 헤더
-  html += `
-    <div class="header">
-      <div class="flower","header-title">🌸🌼${name}의 한글연습🌼🌸</div>
-    </div>
-  `;
-  
 
   // 상단
   html += `
@@ -170,13 +163,26 @@ function generate() {
       <div>날짜: ${today}</div>
     </div>
   `;
+
+  
+  
+  // 🌸 헤더
+  html += `
+    <div class="header">
+      <div class="flower","header-title">🌸🌼${name}의 한글연습🌼🌸</div>
+    </div>
+  `;
+
+
+  
+  
 // 🌸 헤더 아래에 추가
 html += `
   <div style="
     text-align:center;
     font-size:${fontSize + 10}px;
     font-weight:bold;
-    margin-bottom:15px;
+    margin-bottom:25px;
     font-family:${fontFamily};
   ">
     ${text}
