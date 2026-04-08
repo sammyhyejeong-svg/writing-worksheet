@@ -37,35 +37,54 @@
     border: none;
   }
 
-  /* 🔥 A4 정확 설정 */
+  /* 📄 페이지 */
   .page {
     width: 210mm;
     height: 297mm;
-    padding: 10mm;
+    padding: 8mm;
     box-sizing: border-box;
-    background: white;
-    overflow: hidden; /* 🔥 넘침 방지 */
+    overflow: hidden;
   }
 
+  /* 🔥 프린트 최적화 */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  @media print {
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 0;
+    }
+
+    .controls {
+      display: none;
+    }
+
+    .page {
+      page-break-after: avoid;
+    }
+  }
+
+  /* 상단 */
   .header {
-    text-align: center;
-    margin-bottom: 10px;
-  }
-
-  .header-title {
-    font-size: 24px;
-    font-weight: bold;
-  }
-
-  .flower {
-    font-size: 22px;
-  }
-
-  .top {
     display: flex;
     justify-content: space-between;
     font-size: 13px;
     margin-bottom: 10px;
+  }
+
+  .top {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .top-title {
+    font-size: 24px;
+    font-weight: bold;
   }
 
   .row {
@@ -75,32 +94,47 @@
   }
 
   .box {
-    border: 1px solid #aaa;
     border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
     margin-right: 4px;
   }
 
   .char {
-    position: static;
     color: #bbb;
   }
 
-  @page {
-    size: A4 portrait;
-    margin: 0;
+  /* 🎨 테마 */
+
+  .theme-pink {
+    background: #fff0f5;
+  }
+  .theme-pink .top-title {
+    color: #ff6b9a;
+  }
+  .theme-pink .box {
+    border: 2px solid #ffc2d1;
   }
 
-  @media print {
-    .controls {
-      display: none;
-    }
-    .page {
-      page-break-after: avoid; /* 🔥 한 장 유지 */
-    }
+  .theme-dino {
+    background: #f0fff4;
+  }
+  .theme-dino .top-title {
+    color: #2f9e44;
+  }
+  .theme-dino .box {
+    border: 2px solid #69db7c;
+  }
+
+  .theme-simple {
+    background: #ffffff;
+  }
+  .theme-simple .top-title {
+    color: #333;
+  }
+  .theme-simple .box {
+    border: 1px solid #000;
   }
 </style>
 </head>
@@ -125,6 +159,13 @@
     <option value="serif">명조체</option>
   </select>
 
+  <label>디자인 테마</label>
+  <select id="theme">
+    <option value="theme-pink">🌸 러블리</option>
+    <option value="theme-dino">🦖 공룡</option>
+    <option value="theme-simple">📘 심플</option>
+  </select>
+
   <label>따라쓰기 횟수</label>
   <input id="traceCount" type="number" value="4">
 
@@ -145,53 +186,45 @@ function generate() {
   const fontFamily = document.getElementById("fontFamily").value;
   const traceCount = parseInt(document.getElementById("traceCount").value);
   const blankCount = parseInt(document.getElementById("blankCount").value);
+  const theme = document.getElementById("theme").value;
 
   const chars = text.split("");
 
   const boxSize = fontSize * 1.5;
   const rowGap = fontSize / 3;
 
-  let html = `<div class="page">`;
+  let html = `<div class="page ${theme}">`;
 
   const today = new Date().toLocaleDateString();
 
-
-  // 상단
+  // 🔥 헤더
   html += `
     <div class="header">
       <div>✍️ 글자를 따라쓰며 연습해요</div>
-         <div style="text-align:left">
       <div>날짜: ${today}</div>
-               <div style="text-align:right">
     </div>
   `;
 
-  
-  
-  // 🌸 헤더
+  // 🌸 중앙 제목
   html += `
     <div class="top">
-      <div class="flower","top-title">🌸🌼${name}의 한글연습🌼🌸</div>
-    <div style="text-align:center">
+      <div class="top-title">🌸🌼${name}의 한글연습🌼🌸</div>
     </div>
   `;
 
+  // 연습 문장
+  html += `
+    <div style="
+      text-align:center;
+      font-size:${fontSize + 10}px;
+      font-weight:bold;
+      margin-bottom:${fontSize * 1.8}px;
+      font-family:${fontFamily};
+    ">
+      ${text}
+    </div>
+  `;
 
-  
-  
-// 🌸 헤더 아래에 추가
-html += `
-  <div style="
-    text-align:center;
-    font-size:${fontSize + 10}px;
-    font-weight:bold;
-    margin-bottom:25px;
-    font-family:${fontFamily};
-  ">
-    ${text}
-  </div>
-`;
-  
   // 따라쓰기
   for (let i = 0; i < traceCount; i++) {
     html += `<div class="row" style="margin-bottom:${rowGap}px;">`;
