@@ -163,6 +163,14 @@ function generate() {
     </div>
   `;
   
+
+  // 상단
+  html += `
+    <div class="top">
+      <div>✍️ 글자를 따라쓰며 연습해요</div>
+      <div>날짜: ${today}</div>
+    </div>
+  `;
 // 🌸 헤더 아래에 추가
 html += `
   <div style="
@@ -176,14 +184,6 @@ html += `
   </div>
 `;
   
-  // 상단
-  html += `
-    <div class="top">
-      <div>✍️ 글자를 따라쓰며 연습해요</div>
-      <div>날짜: ${today}</div>
-    </div>
-  `;
-
   // 따라쓰기
   for (let i = 0; i < traceCount; i++) {
     html += `<div class="row" style="margin-bottom:${rowGap}px;">`;
