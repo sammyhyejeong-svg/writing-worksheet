@@ -19,41 +19,42 @@
   label {
     font-weight: bold;
     margin-top: 10px;
-    display: block;
   }
 
   input, select, button {
     width: 100%;
     padding: 10px;
     margin: 5px 0;
-    box-sizing: border-box; /* 🔥 폭 통일 핵심 */
+    box-sizing: border-box;
   }
 
-  .worksheet {
+  /* 🔥 페이지 */
+  .page {
     width: 210mm;
     height: 297mm;
-    padding: 15mm;
+    padding: 12mm;
     box-sizing: border-box;
     background: white;
+    margin-bottom: 10px;
   }
 
   .top {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     font-size: 14px;
   }
 
   .title {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     font-weight: bold;
   }
 
   .row {
     display: flex;
     justify-content: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .box {
@@ -67,19 +68,25 @@
 
   .char {
     position: absolute;
-    top: 2px; /* 🔥 칸 "위쪽" 위치 */
+    top: 3px;
   }
 
   .trace {
     color: #bbb;
   }
 
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
   @media print {
     .controls {
       display: none;
     }
-    body {
-      margin: 0;
+
+    .page {
+      page-break-after: always;
     }
   }
 </style>
@@ -91,7 +98,7 @@
   <h2>✏️ 글자 따라쓰기 활동지</h2>
 
   <label>연습할 문장</label>
-  <input id="textInput" placeholder="예: 박지안 내 사랑">
+  <input id="textInput">
 
   <label>글자 크기</label>
   <input id="fontSize" type="number" value="30">
@@ -104,16 +111,16 @@
   </select>
 
   <label>따라쓰기 반복 횟수</label>
-  <input id="traceCount" type="number" value="5">
+  <input id="traceCount" type="number" value="10">
 
   <label>빈칸 반복 횟수</label>
-  <input id="blankCount" type="number" value="5">
+  <input id="blankCount" type="number" value="10">
 
   <button onclick="generate()">생성</button>
   <button onclick="window.print()">PDF 저장</button>
 </div>
 
-<div class="worksheet" id="worksheet"></div>
+<div id="worksheet"></div>
 
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 
@@ -122,55 +129,78 @@ function generate() {
   const text = document.getElementById("textInput").value;
   const fontSize = parseInt(document.getElementById("fontSize").value);
   const fontFamily = document.getElementById("fontFamily").value;
-  const traceCount = document.getElementById("traceCount").value;
-  const blankCount = document.getElementById("blankCount").value;
+  const traceCount = parseInt(document.getElementById("traceCount").value);
+  const blankCount = parseInt(document.getElementById("blankCount").value);
 
   const chars = text.split("");
 
-  let html = "";
-
-  // 날짜
-  const today = new Date();
-  const dateStr = today.toLocaleDateString();
-
-  html += `
-    <div class="top">
-      <div>✍️ 글자를 따라쓰며 연습해요</div>
-      <div>날짜: ${dateStr}</div>
-    </div>
-  `;
-
-  // 제목
-  html += `<div class="title" style="font-size:${fontSize + 8}px; font-family:${fontFamily}">
-    ${text}
-  </div>`;
-
-  // 🔥 핵심: 폰트 기준 박스 크기
+  // 🔥 정사각형 크기
   const boxSize = fontSize * 1.8;
 
-  // 따라쓰기
+  // 🔥 페이지당 최대 줄 수 계산
+  const usableHeight = 900; // px 기준 대략
+  const rowHeight = boxSize + 6;
+  const rowsPerPage = Math.floor(usableHeight / rowHeight);
+
+  let allRows = [];
+
+  // 따라쓰기 rows
   for (let i = 0; i < traceCount; i++) {
-    html += `<div class="row">`;
-    chars.forEach(c => {
-      html += `
-        <div class="box" style="width:${boxSize}px; height:${boxSize}px;">
-          <div class="char trace"
-            style="font-size:${fontSize}px; font-family:${fontFamily};">
-            ${c}
-          </div>
-        </div>`;
-    });
-    html += `</div>`;
+    allRows.push({ type: "trace" });
   }
 
-  // 빈칸
+  // 빈칸 rows
   for (let i = 0; i < blankCount; i++) {
-    html += `<div class="row">`;
-    chars.forEach(() => {
-      html += `
-        <div class="box" style="width:${boxSize}px; height:${boxSize}px;"></div>
-      `;
+    allRows.push({ type: "blank" });
+  }
+
+  let html = "";
+  let pageCount = Math.ceil(allRows.length / rowsPerPage);
+
+  const today = new Date().toLocaleDateString();
+
+  for (let p = 0; p < pageCount; p++) {
+    html += `<div class="page">`;
+
+    // 상단
+    html += `
+      <div class="top">
+        <div>✍️ 글자를 따라쓰며 연습해요</div>
+        <div>날짜: ${today}</div>
+      </div>
+    `;
+
+    // 제목 (첫 페이지만)
+    if (p === 0) {
+      html += `<div class="title" style="font-size:${fontSize + 8}px; font-family:${fontFamily}">
+        ${text}
+      </div>`;
+    }
+
+    // 해당 페이지 rows
+    let start = p * rowsPerPage;
+    let end = start + rowsPerPage;
+    let pageRows = allRows.slice(start, end);
+
+    pageRows.forEach(r => {
+      html += `<div class="row">`;
+
+      chars.forEach(c => {
+        if (r.type === "trace") {
+          html += `
+            <div class="box" style="width:${boxSize}px;height:${boxSize}px;">
+              <div class="char trace" style="font-size:${fontSize}px; font-family:${fontFamily}">
+                ${c}
+              </div>
+            </div>`;
+        } else {
+          html += `<div class="box" style="width:${boxSize}px;height:${boxSize}px;"></div>`;
+        }
+      });
+
+      html += `</div>`;
     });
+
     html += `</div>`;
   }
 
