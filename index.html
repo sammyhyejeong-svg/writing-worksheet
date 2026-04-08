@@ -24,8 +24,9 @@
 
   input, select, button {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     margin: 5px 0;
+    box-sizing: border-box; /* 🔥 폭 통일 핵심 */
   }
 
   .worksheet {
@@ -39,34 +40,34 @@
   .top {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .check-box {
-    width: 25px;
-    height: 25px;
-    border: 1px solid black;
+    margin-bottom: 15px;
+    font-size: 14px;
   }
 
   .title {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     font-weight: bold;
   }
 
   .row {
     display: flex;
-    justify-content: center; /* 🔥 가운데 정렬 */
-    margin-bottom: 6px;
+    justify-content: center;
+    margin-bottom: 8px;
   }
 
   .box {
     border: 1px solid #000;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* 🔥 글자 위쪽 정렬 */
-    padding-top: 3px;
-    margin-right: 3px;
+    align-items: flex-start;
+    margin-right: 4px;
+    position: relative;
+  }
+
+  .char {
+    position: absolute;
+    top: 2px; /* 🔥 칸 "위쪽" 위치 */
   }
 
   .trace {
@@ -90,10 +91,10 @@
   <h2>✏️ 글자 따라쓰기 활동지</h2>
 
   <label>연습할 문장</label>
-  <input id="textInput" placeholder="예: 내사랑 박지안">
+  <input id="textInput" placeholder="예: 박지안 내 사랑">
 
   <label>글자 크기</label>
-  <input id="fontSize" type="number" value="20">
+  <input id="fontSize" type="number" value="30">
 
   <label>폰트 종류</label>
   <select id="fontFamily">
@@ -134,34 +135,30 @@ function generate() {
 
   html += `
     <div class="top">
+      <div>✍️ 글자를 따라쓰며 연습해요</div>
       <div>날짜: ${dateStr}</div>
-      <div style="display:flex; align-items:center; gap:5px;">
-        확인
-        <div class="check-box"></div>
-      </div>
     </div>
   `;
 
   // 제목
-  html += `<div class="title" style="font-size:${fontSize + 6}px; font-family:${fontFamily}">
+  html += `<div class="title" style="font-size:${fontSize + 8}px; font-family:${fontFamily}">
     ${text}
   </div>`;
 
-  // 네모칸 크기 자동 계산
-  const boxSize = Math.min(50, 500 / chars.length);
-  const finalFontSize = Math.min(fontSize, boxSize * 0.6);
+  // 🔥 핵심: 폰트 기준 박스 크기
+  const boxSize = fontSize * 1.8;
 
   // 따라쓰기
   for (let i = 0; i < traceCount; i++) {
     html += `<div class="row">`;
     chars.forEach(c => {
-      html += `<div class="box trace"
-        style="
-          width:${boxSize}px;
-          height:${boxSize}px;
-          font-size:${finalFontSize}px;
-          font-family:${fontFamily};
-        ">${c}</div>`;
+      html += `
+        <div class="box" style="width:${boxSize}px; height:${boxSize}px;">
+          <div class="char trace"
+            style="font-size:${fontSize}px; font-family:${fontFamily};">
+            ${c}
+          </div>
+        </div>`;
     });
     html += `</div>`;
   }
@@ -170,11 +167,9 @@ function generate() {
   for (let i = 0; i < blankCount; i++) {
     html += `<div class="row">`;
     chars.forEach(() => {
-      html += `<div class="box"
-        style="
-          width:${boxSize}px;
-          height:${boxSize}px;
-        "></div>`;
+      html += `
+        <div class="box" style="width:${boxSize}px; height:${boxSize}px;"></div>
+      `;
     });
     html += `</div>`;
   }
